@@ -34,6 +34,7 @@
   --display:clamp(2.35rem, 1rem + 5.2vw, 6.25rem);
   --body:clamp(1rem, .88rem + .46vw, 1.3125rem);
   --small:.875rem;
+  --legal-h:2.25rem;        /* height of the Impressum / Privacy strip along the bottom */
 }
 *,*::before,*::after{box-sizing:border-box}
 html{background:var(--paper)}
@@ -161,7 +162,11 @@ html.lenis, html.lenis body{height:auto}
 .signup button:hover{background:#000}
 .signup button:focus-visible{outline:2px solid var(--ultramarine); outline-offset:3px}
 .signup[aria-invalid="true"] .signup-fields{border-color:var(--cinnabar)}
-.status{font-size:calc(var(--small) * var(--fit)); min-height:1.6em; margin:.65rem 0 0; color:var(--graphite)}
+.consent{font-size:calc(.78rem * var(--fit)); line-height:1.5; margin:.7rem 0 0; color:var(--graphite); max-width:30rem}
+.consent a, .legal a{color:var(--ink); text-decoration:underline; text-decoration-thickness:1px; text-underline-offset:.18em; text-decoration-color:rgb(20 20 20 / .35); transition:color .2s, text-decoration-color .2s}
+.consent a:hover, .legal a:hover{color:var(--ultramarine); text-decoration-color:currentColor}
+.consent a:focus-visible, .legal a:focus-visible{outline:2px solid var(--ultramarine); outline-offset:2px; border-radius:1px}
+.status{font-size:calc(var(--small) * var(--fit)); min-height:1.6em; margin:.4rem 0 0; color:var(--graphite)}
 .status.ok{color:var(--ultramarine)}
 .status.err{color:var(--cinnabar)}
 
@@ -196,10 +201,10 @@ html.lenis, html.lenis body{height:auto}
   --bar-h:calc(var(--bar-w) * 208 / 425);       /* the artwork's own aspect ratio */
   --pm:calc(var(--bar-h) * .242);               /* Bildwortmarke = EU flag height inside the bar */
   --e:calc(var(--bar-h) * .093);                /* one eagle width = Schutzzone */
-  position:absolute; left:0; right:0; bottom:0;
+  position:absolute; left:0; right:0; bottom:calc(var(--legal-h) + env(safe-area-inset-bottom, 0px));
   display:flex; justify-content:center; align-items:center; gap:calc(var(--e) * .8) calc(var(--e) * 2);
   background:#fff; color:#000;                  /* pure white, as the styleguide requires */
-  padding:calc(var(--e) * .35) var(--e) calc(var(--e) * .35 + env(safe-area-inset-bottom, 0px));
+  padding:calc(var(--e) * .35) var(--e);
   opacity:0;
 }
 .marks{display:flex; justify-content:center; align-items:center}
@@ -241,6 +246,20 @@ html.lenis, html.lenis body{height:auto}
 .social svg{display:block; width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round}
 .social .fill{fill:currentColor; stroke:none}
 
+/* Impressum / Privacy Policy — on screen at every point of the scroll, so the legal notice is
+   always one click away (§ 5 DDG: "leicht erkennbar, unmittelbar erreichbar und ständig verfügbar").
+   The background is set from JS: paper while the score shows through, white under the funding band. */
+.legal{
+  position:absolute; left:0; right:0; bottom:0; z-index:2;
+  display:flex; justify-content:center; align-items:center; gap:1.75rem;
+  height:calc(var(--legal-h) + env(safe-area-inset-bottom, 0px));
+  padding:0 16px env(safe-area-inset-bottom, 0px);
+  margin:0; list-style:none;
+  background:rgb(232 229 222 / .9); border-top:1px solid rgb(20 20 20 / .08);
+  font-size:.8125rem; line-height:1; letter-spacing:.01em;
+  pointer-events:auto;
+}
+.legal li{margin:0}
 .sr-only{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0}
 
 @media (max-width:720px){
@@ -251,7 +270,9 @@ html.lenis, html.lenis body{height:auto}
   .signup{margin-top:.85rem}
   .signup input{padding:.8rem 1rem}
   .signup button{padding:.8rem 1rem}
-  .status{margin-top:.4rem}
+  .status{margin-top:.3rem}
+  .consent{margin-top:.5rem; line-height:1.4}
+  .legal{gap:1.25rem; font-size:.75rem}
   /* the bar keeps priority on a phone — it takes the full width so the EU emblem stays
      clearly readable (Art. 47 / Anhang IX) — and the partners compress to one short row.
      If the band is still too tall for your liking, delete the partners, not the bar. */
@@ -422,9 +443,10 @@ html.lenis, html.lenis body{height:auto}
           <div class="signup-fields">
             <label class="sr-only" for="email">Email address</label>
             <input id="email" name="email" type="email" autocomplete="email" inputmode="email"
-                   placeholder="Your email address" aria-describedby="status" required>
+                   placeholder="Your email address" aria-describedby="consent status" required>
             <button type="submit">Join the waitlist</button>
           </div>
+          <p class="consent" id="consent">By joining our waitlist, you agree to receive project updates via email. You can unsubscribe at any time. For details, see our <a href="privacy.html">Privacy Policy</a>.</p>
           <p class="status" id="status" role="status" aria-live="polite"></p>
         </form>
         <iframe name="waitlist-target" title="Waitlist submission" hidden aria-hidden="true"></iframe>
@@ -443,7 +465,7 @@ html.lenis, html.lenis body{height:auto}
 
   <!-- ================================================================
        Funding band. On screen at landing (no scrolling needed), fades out for the
-       features, and comes back for the waitlist and the funding section.
+       features and the waitlist, and comes back where the funding section starts.
 
        The bar is the official file for Zuwendungsempfänger*innen (Hochschulen und
        Forschungseinrichtungen sowie deren Gründungsteams):
@@ -474,6 +496,11 @@ html.lenis, html.lenis body{height:auto}
       </div>
     </div>
   </footer>
+
+  <ul class="legal" id="legal" aria-label="Legal">
+    <li><a href="impressum.html">Impressum</a></li>
+    <li><a href="privacy.html">Privacy Policy</a></li>
+  </ul>
 </div>
 
 <div class="track" id="track" aria-hidden="true"></div>
@@ -2225,7 +2252,7 @@ requestAnimationFrame(frameLoop);
      About dissolves straight into the first feature, and the menu lands with it. */
   const sectionWin = { in: [FEAT0 + MORPH * 0.6, FEAT0 + MORPH + 0.08], out: [WAIT - 0.2, WAIT + 0.2] };
   const heroBandWin = [.02, .3];                              // funding band leaves as the hero resolves…
-  const bandWin = [WAIT + 0.5, WAIT + 0.95];                  // …and returns with the waitlist
+  const bandWin = [FUND + 0.05, FUND + 0.55];                 // …and returns where the funding section starts
   const WAIT_REST = WAIT + 0.95;
   const HOLD = i => FEAT0 + STEP * i + 0.95;                  // resting point of feature i
 
@@ -2282,7 +2309,8 @@ requestAnimationFrame(frameLoop);
 
   /* ---------- geometry (logo proportions measured from LOGO_FULL_001.png) */
   let vw, vh, mobile, hero, frame, wm, track = $("track");
-  let bandH = 0, stageCy = 0, stageDrop = 0, dropLast = null;
+  let bandH = 0, legalH = 0, stageCy = 0, stageDrop = 0, dropLast = null, legalLast = null;
+  const legal = $("legal");
   function layout(){
     vw = innerWidth; vh = innerHeight; mobile = vw < 720;
     /* The stage is the strip above the funding band. The logo, the brackets and the text column
@@ -2294,7 +2322,8 @@ requestAnimationFrame(frameLoop);
        long as the logos are on screen; and low, centred in the whole viewport, once they fade.
        The stage slides between the two with the band, so it only moves when the band does. */
     stageCy = (vh - bandH) * .5;
-    stageDrop = vh * .5 - stageCy;        // = bandH / 2
+    legalH = legal.offsetHeight;
+    stageDrop = (vh - legalH) * .5 - stageCy;   // low line: centred in the space above the legal strip
     const Lw = mobile ? vw * .84 : Math.min(vw * .58, 820);   // lockup width
     const k = Lw / 3457, x0 = (vw - Lw) / 2, cy = stageCy;
     const X = x => x0 + (x - 661) * k, Y = y => cy + (y - 2500) * k;
@@ -2537,12 +2566,17 @@ requestAnimationFrame(frameLoop);
     const active = Math.max(0, Math.min(NF - 1, Math.floor((s - FEAT0 - MORPH / 2) / STEP)));
     notes.forEach((n, i) => { const on = String(i === active); if (n.getAttribute("aria-current") !== on) n.setAttribute("aria-current", on); });
 
-    /* funding band: on screen at landing, away during the features, back for waitlist + funding */
-    /* The band fades out for the features and comes back for the waitlist and the funding
-       section. The stage rides with it: high while the logos are there, centred in the page while
+    /* funding band: on screen at landing, away during the features and the waitlist, back for funding */
+    /* The band fades out for the features and comes back where the funding section starts. The stage rides with it: high while the logos are there, centred in the page while
        they are not. Nothing else on the page moves, and the copy is clear of the band either way. */
     const bandVis = Math.max(1 - ramp(s, heroBandWin), ramp(s, bandWin));
     setVis(funding, bandVis, 8);
+    /* the legal strip turns from paper to white with the band, so the two read as one footer */
+    const lk = Math.round(bandVis * 100);
+    if (lk !== legalLast){
+      legalLast = lk; const t = lk / 100;
+      legal.style.background = `rgb(${Math.round(232 + 23 * t)} ${Math.round(229 + 26 * t)} ${Math.round(222 + 33 * t)} / ${(.9 + .1 * t).toFixed(2)})`;
+    }
     const drop = Math.round(stageDrop * (1 - bandVis) * 10) / 10;
     if (drop !== dropLast){ dropLast = drop; content.style.transform = `translateY(calc(-50% + ${drop}px))`; }
 
